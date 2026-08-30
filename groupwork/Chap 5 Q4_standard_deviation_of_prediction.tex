@@ -1,0 +1,56 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{parskip}
+
+\title{Chapter 5 --- Question 4}
+\author{Group 4}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Question}
+Suppose that we use some statistical learning method to make a prediction for the response $Y$ for a particular value of the predictor $X$. Carefully describe how we might estimate the standard deviation of our prediction.
+
+\section*{Answer}
+
+We have a single fitted model that produces one predicted value $\hat{Y}$ at a given value of $X$. The question is how confident we should be in that single prediction --- that is, how much would $\hat{Y}$ likely change if we had trained our model on a different sample of data drawn from the same underlying population?
+
+Since most statistical learning methods do not come with a closed-form formula for the standard error of a prediction (this is really only convenient for simple models such as ordinary least squares), the natural general-purpose tool is the \textbf{bootstrap}. The procedure is as follows.
+
+\begin{enumerate}[label=\textbf{Step \arabic*.}, leftmargin=1.6cm]
+
+\item \textbf{Resample with replacement.} From the original training data set of size $n$, draw a new data set of size $n$ by sampling observations \emph{with replacement}. This is called a bootstrap sample. Because sampling is with replacement, some original observations may appear multiple times in the bootstrap sample, and others may not appear at all.
+
+\item \textbf{Refit the model.} Fit the statistical learning method on this bootstrap sample, exactly as it was fit on the original data.
+
+\item \textbf{Predict at the value of interest.} Using this newly fitted model, compute the predicted response at the specific value of $X$ we care about. Call this prediction $\hat{Y}^{*1}$.
+
+\item \textbf{Repeat many times.} Repeat Steps 1--3 a large number of times, $B$ (e.g.\ $B = 1{,}000$ or $B = 10{,}000$), each time drawing a fresh bootstrap sample, refitting the model, and predicting at the same $X$. This produces a collection of $B$ bootstrap predictions, all at the same point $X$ but coming from models fit on slightly different resampled training sets:
+\[
+\hat{Y}^{*1}, \ \hat{Y}^{*2}, \ \ldots, \ \hat{Y}^{*B}.
+\]
+
+\item \textbf{Compute the spread of these predictions.} The standard deviation of the $B$ bootstrap predictions is our estimate of the standard deviation (standard error) of the original prediction $\hat{Y}$:
+\[
+\widehat{\mathrm{SD}}(\hat{Y}) \;=\; \sqrt{\dfrac{1}{B-1}\sum_{r=1}^{B}\left(\hat{Y}^{*r} - \overline{\hat{Y}}^{*}\right)^{2}},
+\qquad \text{where } \overline{\hat{Y}}^{*} = \dfrac{1}{B}\sum_{r=1}^{B}\hat{Y}^{*r}.
+\]
+
+\end{enumerate}
+
+\subsection*{Interpretation}
+
+This quantity, $\widehat{\mathrm{SD}}(\hat{Y})$, tells us how much the predicted value at $X$ would typically vary if we had trained our model on a different random sample from the same population. A small value indicates the prediction is stable and trustworthy; a large value indicates the prediction is highly sensitive to the particular sample of training data we happened to observe, and should be treated with more caution --- for example, by reporting a wider interval around the point prediction.
+
+\subsection*{Why the Bootstrap is the Right Tool Here}
+
+The key advantage of this approach is that it requires \emph{no assumptions} about the underlying distribution of the data or the mathematical form of the fitted model. It works identically whether the model is linear regression, a decision tree, a neural network, or any other learning method --- as long as the model can be refit on a resampled data set and used to generate a prediction. This generality is precisely why the bootstrap, introduced in Section 5.2, is described as such a powerful and widely applicable tool: it converts the abstract question ``how uncertain is this prediction?'' into a concrete, computable quantity, simply by simulating the process of re-sampling from the population using the data we already have.
+
+\end{document}
